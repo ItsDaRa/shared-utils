@@ -1065,14 +1065,13 @@ function updateProgress() {
   document.getElementById('progressBar').style.width = pct + '%';
 }
 
-// ---- Cloud sync (jsonblob.com) ----
-// Blob pre-cree — tous les appareils partagent cet ID
-const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019c801d-ae60-7858-b744-e2b8b75a0e33';
+// ---- Cloud sync (Firebase Realtime Database) ----
+const FIREBASE_URL = 'https://shared-utils-b7fc3-default-rtdb.europe-west1.firebasedatabase.app/grille-visite.json';
 let saveTimer = null;
 
 async function cloudSave(state) {
   try {
-    await fetch(BLOB_URL, {
+    await fetch(FIREBASE_URL, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(state)
@@ -1084,8 +1083,11 @@ async function cloudSave(state) {
 
 async function cloudLoad() {
   try {
-    const res = await fetch(BLOB_URL);
-    if (res.ok) return await res.json();
+    const res = await fetch(FIREBASE_URL);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.checks) return data;
+    }
   } catch (e) {}
   return null;
 }
