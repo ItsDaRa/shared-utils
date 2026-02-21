@@ -1065,8 +1065,66 @@ function updateProgress() {
   document.getElementById('progressBar').style.width = pct + '%';
 }
 
+// ---- Cloud sync (jsonblob.com) ----
+const BLOB_API = 'https://jsonblob.com/api/jsonBlob';
+let blobId = null;
+let saveTimer = null;
+
+function getBlobId() {
+  // Check URL hash first, then localStorage
+  if (location.hash && location.hash.length > 1) return location.hash.slice(1);
+  return localStorage.getItem('grille-blob-id');
+}
+
+function setBlobId(id) {
+  blobId = id;
+  localStorage.setItem('grille-blob-id', id);
+  if (!location.hash || location.hash.slice(1) !== id) {
+    history.replaceState(null, '', '#' + id);
+  }
+}
+
+async function cloudSave(state) {
+  try {
+    if (blobId) {
+      await fetch(BLOB_API + '/' + blobId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+      });
+    } else {
+      const res = await fetch(BLOB_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+      });
+      const loc = res.headers.get('Location') || res.headers.get('location');
+      if (loc) {
+        const id = loc.split('/').pop();
+        setBlobId(id);
+      }
+    }
+  } catch (e) {
+    // Silently fail — localStorage is the fallback
+  }
+}
+
+async function cloudLoad() {
+  const id = getBlobId();
+  if (!id) return null;
+  try {
+    const res = await fetch(BLOB_API + '/' + id);
+    if (res.ok) {
+      blobId = id;
+      setBlobId(id);
+      return await res.json();
+    }
+  } catch (e) {}
+  return null;
+}
+
 // ---- Save / Restore ----
-function saveState() {
+function collectState() {
   const state = { checks: [], toggles: [], frictions: [], notes: [], blocs: [], inlineNotes: [] };
 
   document.querySelectorAll('.check-row').forEach((el, i) => {
@@ -1097,7 +1155,18 @@ function saveState() {
     state.inlineNotes[i] = el.value;
   });
 
+  return state;
+}
+
+function saveState() {
+  const state = collectState();
+
+  // Local save (immediate)
   localStorage.setItem('grille-visite-fabre', JSON.stringify(state));
+
+  // Cloud save (debounced 1.5s to avoid spamming)
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => cloudSave(state), 1500);
 
   const fab = document.getElementById('fabSave');
   fab.classList.add('saved');
@@ -1109,10 +1178,8 @@ function saveState() {
   setTimeout(() => toast.classList.remove('show'), 1000);
 }
 
-function restoreState() {
-  const raw = localStorage.getItem('grille-visite-fabre');
-  if (!raw) return;
-  const state = JSON.parse(raw);
+function applyState(state) {
+  if (!state) return;
 
   if (state.checks) {
     document.querySelectorAll('.check-row').forEach((el, i) => {
@@ -1159,7 +1226,6 @@ function restoreState() {
     document.querySelectorAll('.inline-note textarea').forEach((el, i) => {
       if (state.inlineNotes[i]) {
         el.value = state.inlineNotes[i];
-        // Open the note and mark the toggle
         el.closest('.inline-note').classList.add('open');
         const toggleBtn = el.closest('.inline-note').previousElementSibling;
         toggleBtn.classList.add('has-text');
@@ -1169,6 +1235,21 @@ function restoreState() {
   }
 
   updateProgress();
+}
+
+async function restoreState() {
+  // Try cloud first (most up to date), fall back to localStorage
+  const cloudState = await cloudLoad();
+  if (cloudState) {
+    applyState(cloudState);
+    // Also update localStorage with cloud data
+    localStorage.setItem('grille-visite-fabre', JSON.stringify(cloudState));
+    return;
+  }
+  const raw = localStorage.getItem('grille-visite-fabre');
+  if (raw) {
+    applyState(JSON.parse(raw));
+  }
 }
 
 // ---- Export as text ----
@@ -1284,8 +1365,11 @@ function clearAll() {
     el.textContent = '+ note';
   });
 
-  // Clear localStorage
+  // Clear localStorage and cloud
   localStorage.removeItem('grille-visite-fabre');
+  if (blobId) {
+    cloudSave({ checks: [], toggles: [], frictions: [], notes: [], blocs: [], inlineNotes: [] });
+  }
 
   updateProgress();
 
@@ -1296,8 +1380,10 @@ function clearAll() {
 }
 
 // Init
-restoreState();
-updateProgress();
+(async () => {
+  await restoreState();
+  updateProgress();
+})();
 </script>
 
 </body>
