@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Visite Groupe Fabre — 4 mars 2026</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --card: #16213e;
+  --accent: #0f3460;
+  --highlight: #e94560;
+  --green: #2ecc71;
+  --orange: #f39c12;
+  --text: #eee;
+  --muted: #8899aa;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 12px;
+  padding-bottom: 80px;
+  -webkit-tap-highlight-color: transparent;
+}
+h1 { font-size: 1.3rem; text-align: center; padding: 16px 0 4px; }
+.subtitle { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; }
+.posture { background: var(--accent); border-left: 4px solid var(--highlight); padding: 12px 14px; border-radius: var(--radius); margin-bottom: 16px; font-size: 0.9rem; line-height: 1.5; }
+
+/* Accordion */
+.bloc { margin-bottom: 12px; }
+.bloc-header {
+  background: var(--card);
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.bloc-header h2 { font-size: 1rem; }
+.bloc-header .arrow { font-size: 1.2rem; transition: transform 0.2s; }
+.bloc.open .arrow { transform: rotate(90deg); }
+.bloc-body { display: none; padding: 10px 4px; }
+.bloc.open .bloc-body { display: block; }
+.bloc.open .bloc-header { border-radius: var(--radius) var(--radius) 0 0; }
+
+/* Section inside bloc */
+.section { margin-bottom: 16px; }
+.section-title {
+  font-size: 0.85rem;
+  color: var(--highlight);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+/* Observation row */
+.obs {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.obs-label { font-size: 0.9rem; margin-bottom: 8px; line-height: 1.4; }
+.obs-hint { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; font-style: italic; }
+
+/* Toggle buttons */
+.toggles { display: flex; gap: 6px; flex-wrap: wrap; }
+.toggle-btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.toggle-btn.selected { background: var(--green); border-color: var(--green); color: #fff; font-weight: 600; }
+.toggle-btn.selected-warn { background: var(--orange); border-color: var(--orange); color: #fff; font-weight: 600; }
+.toggle-btn.selected-bad { background: var(--highlight); border-color: var(--highlight); color: #fff; font-weight: 600; }
+
+/* Checkbox row */
+.check-item { margin-bottom: 6px; }
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid rgba(255,255,255,0.04);
+  min-height: 48px;
+}
+.check-box {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 1.1rem; transition: all 0.15s;
+}
+.check-row.checked .check-box { background: var(--green); border-color: var(--green); }
+.check-text { font-size: 0.9rem; line-height: 1.3; flex: 1; }
+.check-row.checked .check-text { text-decoration: line-through; color: var(--muted); }
+
+/* Inline note toggle button (pencil) */
+.note-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  margin-top: 8px;
+  border: none;
+  background: rgba(255,255,255,0.06);
+  color: var(--muted);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  user-select: none;
+}
+.note-toggle.has-text { color: var(--orange); background: rgba(243,156,18,0.15); }
+
+/* Inline note field */
+.inline-note {
+  display: none;
+  margin-top: 6px;
+}
+.inline-note.open { display: block; }
+.inline-note textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 40px;
+}
+.inline-note textarea::placeholder { color: var(--muted); }
+
+/* Friction logger */
+.friction-log {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.friction-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.friction-tag {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.friction-tag.active { background: var(--highlight); border-color: var(--highlight); }
+
+/* Quick note (section-level) */
+.quick-note {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 44px;
+  margin-top: 6px;
+}
+.quick-note::placeholder { color: var(--muted); }
+
+/* Progress bar */
+.progress-bar {
+  position: fixed; top: 0; left: 0;
+  height: 3px; background: var(--green);
+  transition: width 0.3s; z-index: 100;
+}
+
+/* Floating save button */
+.fab {
+  position: fixed; bottom: 16px; right: 16px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--green); border: none; color: #fff;
+  font-size: 1.4rem; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+}
+.fab.saved { background: var(--accent); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 84px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--green); color: #fff;
+  padding: 10px 20px; border-radius: 20px;
+  font-size: 0.85rem; opacity: 0;
+  transition: opacity 0.3s; z-index: 100;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* Question cards */
+.q-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 8px;
+  border-left: 3px solid var(--orange);
+}
+.q-label { font-size: 0.9rem; margin-bottom: 4px; }
+.q-why { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; }
+
+/* Export overlay */
+.export-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 200;
+  padding: 20px;
+  overflow-y: auto;
+}
+.export-overlay.open { display: block; }
+.export-box {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.export-box h3 { margin-bottom: 12px; }
+.export-box textarea {
+  width: 100%;
+  min-height: 300px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 12px;
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+.export-box button {
+  margin-top: 12px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-right: 8px;
+}
+.btn-copy { background: var(--green); color: #fff; }
+.btn-close { background: var(--accent); color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<h1>Visite Bureau — 4 mars</h1>
+<p class="subtitle">15h — Groupe Fabre</p>
+
+<div class="posture">
+  Curiosite, pas interrogatoire. Ecouter > pitcher.<br>
+  Mains libres, yeux sur les ecrans et les gens.<br>
+  Memo vocal = source principale.
+</div>
+
+<!-- ========== BLOC 0 : AVANT ========== -->
+<div class="bloc open" id="bloc0">
+  <div class="bloc-header" onclick="toggleBloc('bloc0')">
+    <h2>Avant d'arriver</h2>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="bloc-body">
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Relire verbatims audit (Sophie, Enzo, Alexandre)</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Demo chargee sur tablette/telephone</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Telephone charge</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Demander autorisation enregistrement audio</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Lancer l'enregistrement vocal</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== BLOC 1 : OBSERVATION COMMERCIAL ========== -->
+<div class="bloc" id="bloc1">
+  <div class="bloc-header" onclick="toggleBloc('bloc1')">
+    <h2>1. Observer un commercial</h2>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="bloc-body">
+
+    <p class="obs-hint" style="margin-bottom:12px">Demander : "Tu peux me montrer ce que tu fais quand un client t'appelle ?"</p>
+
+    <div class="section">
+      <div class="section-title">Custy Adhoc</div>
+
+      <div class="obs">
+        <div class="obs-label">Fiche client ouverte : qualite des donnees</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Bien remplie</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Partielle</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Vide / obsolete</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Details, champs vus..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Recherche client : comment ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Barre recherche</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Par numero</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Navigation lente</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Autre</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Precision..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Interface Custy : impression generale</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Moderne / web</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Correct</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Vieillot / lent</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Version, look..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Contrats / echeances / documents : accessibles ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Facile</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Plusieurs clics</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Galere</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Nombre de clics, ou c'est..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Drag/drop Outlook &rarr; Custy : vu ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Vu, fluide</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Vu, penible</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Pas vu</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Comment ca marche exactement..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Sort de Custy pour chercher une info ailleurs ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Rarement</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Parfois</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Souvent</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Ou va-t-il chercher..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Photo ecran Custy prise ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Oui</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Non / refuse</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Messagerie</div>
+
+      <div class="obs">
+        <div class="obs-label">Type d'Outlook</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Desktop classique</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">New Outlook</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Web (OWA)</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Version precise..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Volume visible de mails non lus</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')"> &lt; 20</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">20 - 100</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">100+</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Nombre exact si vu..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Organisation boite de reception</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Dossiers / regles</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Basique</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Tout en vrac</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Noms de dossiers vus..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Traitement d'un mail observe ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Oui, rapide</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Oui, laborieux</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Pas vu</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Temps, etapes observees..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Templates / signatures type</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Templates existants</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Tout from scratch</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Photo ecran Outlook prise ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Oui</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Non</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Extranets compagnies</div>
+
+      <div class="obs">
+        <div class="obs-label">Extranet observe en action ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Oui</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Non</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Quelle compagnie..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Temps pour trouver une info / attestation</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')"> &lt; 1 min</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">1-5 min</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">5+ min</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Login extranet</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Sauvegarde</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Retape a chaque fois</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Partage entre collegues</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Compteur de frictions</div>
+      <p class="obs-hint">Taper a chaque fois que tu observes un de ces comportements :</p>
+
+      <div class="friction-log">
+        <div class="friction-tags">
+          <button class="friction-tag" onclick="incrFriction(this)" data-count="0">Copier-coller entre fenetres <span class="fc">0</span></button>
+          <button class="friction-tag" onclick="incrFriction(this)" data-count="0">Changement de contexte <span class="fc">0</span></button>
+          <button class="friction-tag" onclick="incrFriction(this)" data-count="0">Cherche une info longtemps <span class="fc">0</span></button>
+          <button class="friction-tag" onclick="incrFriction(this)" data-count="0">Saisie manuelle repetitive <span class="fc">0</span></button>
+          <button class="friction-tag" onclick="incrFriction(this)" data-count="0">Soupir / frustration <span class="fc">0</span></button>
+          <button class="friction-tag" onclick="incrFriction(this)" data-count="0">Contournement / bidouille <span class="fc">0</span></button>
+        </div>
+        <textarea class="quick-note" placeholder="Details sur les frictions observees..." rows="2" oninput="saveState()"></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Questions a glisser naturellement</div>
+      <div class="check-item">
+        <div class="check-row" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-text">"C'est toujours comme ca ou aujourd'hui c'est calme/charge ?"</span>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Reponse..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+      <div class="check-item">
+        <div class="check-row" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-text">"Si tu devais gagner 30 min/jour, ce serait sur quoi ?"</span>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Reponse..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+      <div class="check-item">
+        <div class="check-row" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-text">"Y a des trucs que tu fais tous les jours et qui te soulent ?"</span>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Reponse..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+      <div class="check-item">
+        <div class="check-row" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-text">"Quand un client appelle et que tu le connais pas, tu fais quoi ?"</span>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Reponse..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+      <div class="check-item">
+        <div class="check-row" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-text">"Comment tu sais qu'un renouvellement approche ?"</span>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Reponse..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== BLOC 2 : INFRA / TECHNIQUE ========== -->
+<div class="bloc" id="bloc2">
+  <div class="bloc-header" onclick="toggleBloc('bloc2')">
+    <h2>2. Infra et technique</h2>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="bloc-body">
+
+    <div class="section">
+      <div class="section-title">Questions critiques</div>
+
+      <div class="q-card">
+        <div class="q-label">Messagerie : O365 ou Exchange on-premise ?</div>
+        <div class="q-why">Determine Graph API vs IMAP</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Office 365</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Exchange on-prem</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Ne sait pas</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Precision, version..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">Navigateur principal ?</div>
+        <div class="q-why">Compatibilite extension</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Chrome</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Edge</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Firefox</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Autre</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Version, mixte..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">SYNEXIA : perimetre et contraintes ?</div>
+        <div class="q-why">Peuvent bloquer l'install d'une extension ? Firewall ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Souple</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Contraintes legeres</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Verrouille / GPO</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Pas aborde</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Contact, details..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">Contact technique chez Custy identifie ?</div>
+        <div class="q-why">Indispensable pour l'acces API</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Oui, nom obtenu</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Benjamin va chercher</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Non aborde</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Nom, email, tel..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">Serveur local ?</div>
+        <div class="q-why">Impact archi et hebergement</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Pas de serveur local</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Oui, serveur local</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Ne sait pas</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Role du serveur..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">Politique installation logiciels ?</div>
+        <div class="q-why">Restrictions admin, GPO, whitelisting</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Libre</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Avec validation</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Verrouille</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Qui valide, process..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-label">Boites mails partagees ? (contact@, sinistres@)</div>
+        <div class="q-why">Impact sur triage et routage email</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Oui, identifiees</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Pas sur</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Non / pas aborde</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Adresses vues..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Questions secondaires</div>
+
+      <div class="obs">
+        <div class="obs-label">Nombre de postes</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">1-5</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">6-10</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">10+</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Nombre exact..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Acces Internet</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Direct</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">VPN / proxy</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Qui est le plus a l'aise avec la tech ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Identifie</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Pas aborde</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Prenom..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Extensions / outils deja installes ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Oui, reperes</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Aucun</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Pas regarde</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Lesquels..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== BLOC 3 : DISCUSSION BENJAMIN ========== -->
+<div class="bloc" id="bloc3">
+  <div class="bloc-header" onclick="toggleBloc('bloc3')">
+    <h2>3. Discussion Benjamin</h2>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="bloc-body">
+
+    <div class="section">
+      <div class="section-title">Priorites</div>
+
+      <div class="obs">
+        <div class="obs-label">Ordre Phase 1 (CRM) &rarr; Phase 2 (mails) confirme ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Confirme</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Ajuste</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Pas aborde</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Si ajuste, comment..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Irritant sous-estime decouvert ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Non, RAS</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Oui</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Quel irritant..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Recap hebdo du lundi</div>
+
+      <div class="obs">
+        <div class="obs-label">Format souhaite</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Email</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Notif dans l'outil</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">WhatsApp</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Ecran dashboard</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Precision..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Pour qui ?</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Benjamin seul</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Chaque commercial</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Les deux</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Organisation projet</div>
+
+      <div class="obs">
+        <div class="obs-label">Referent interne pour tests/feedbacks</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Benjamin</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Un commercial</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">Les deux</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Pas defini</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Qui exactement..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Dispo pour feedback</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">1h+/semaine</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">30 min/semaine</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Flou</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+
+      <div class="obs">
+        <div class="obs-label">Prochaine etape selon Benjamin</div>
+        <div class="toggles">
+          <button class="toggle-btn" onclick="selectToggle(this,'good')">GO, on demarre</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'warn')">Veut la propal ecrite</button>
+          <button class="toggle-btn" onclick="selectToggle(this,'bad')">Hesite encore</button>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Ses mots exacts..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Questions sensibles (si le timing permet)</div>
+
+      <div class="check-item">
+        <div class="check-row" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-text">Budget 40-50k : dans la bonne fourchette ?</span>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Reaction..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+      <div class="check-item">
+        <div class="check-row" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-text">Timeline : premier resultat attendu quand ?</span>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Date evoquee..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+      <div class="check-item">
+        <div class="check-row" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <span class="check-text">Frugal_ : toujours en consideration ?</span>
+        </div>
+        <button class="note-toggle" onclick="openNote(this)">+ note</button>
+        <div class="inline-note"><textarea placeholder="Reaction..." oninput="noteChanged(this)"></textarea></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== CHECKLIST SORTIE ========== -->
+<div class="bloc" id="bloc4">
+  <div class="bloc-header" onclick="toggleBloc('bloc4')">
+    <h2>Checklist de sortie</h2>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="bloc-body">
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Vu Custy Adhoc en action</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Vu la messagerie en action</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Type messagerie identifie (O365 / Exchange)</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Navigateur identifie (Chrome / Edge)</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Role SYNEXIA compris</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Photos d'ecran prises</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Prochaines etapes confirmees avec Benjamin</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Date prochain echange fixee</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="Quelle date..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+    <div class="check-item">
+      <div class="check-row" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <span class="check-text">Equipe remerciee (pas seulement Benjamin)</span>
+      </div>
+      <button class="note-toggle" onclick="openNote(this)">+ note</button>
+      <div class="inline-note"><textarea placeholder="..." oninput="noteChanged(this)"></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== NOTES LIBRES ========== -->
+<div class="bloc" id="bloc5">
+  <div class="bloc-header" onclick="toggleBloc('bloc5')">
+    <h2>Notes libres</h2>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="bloc-body">
+    <div class="section">
+      <div class="section-title">Verbatims notables</div>
+      <textarea class="quick-note" placeholder="Citations exactes..." rows="3" oninput="saveState()"></textarea>
+    </div>
+    <div class="section">
+      <div class="section-title">Surprises / non anticipe</div>
+      <textarea class="quick-note" placeholder="Ce qu'on ne savait pas..." rows="3" oninput="saveState()"></textarea>
+    </div>
+    <div class="section">
+      <div class="section-title">Decisions obtenues</div>
+      <textarea class="quick-note" placeholder="GO, option choisie, etc." rows="2" oninput="saveState()"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ========== EXPORT ========== -->
+<div class="export-overlay" id="exportOverlay">
+  <div class="export-box">
+    <h3>Export des observations</h3>
+    <textarea id="exportText" readonly></textarea>
+    <div>
+      <button class="btn-copy" onclick="copyExport()">Copier</button>
+      <button class="btn-close" onclick="closeExport()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAB buttons -->
+<button class="fab" id="fabSave" onclick="saveState()" style="right:16px">&#128190;</button>
+<button class="fab" id="fabExport" onclick="showExport()" style="right:84px;background:var(--orange);font-size:1.1rem;">&#128203;</button>
+<button class="fab" id="fabClear" onclick="confirmClear()" style="right:152px;background:var(--highlight);font-size:1.1rem;">&#128465;</button>
+<div class="toast" id="toast">OK</div>
+
+<script>
+function toggleBloc(id) {
+  document.getElementById(id).classList.toggle('open');
+  saveState();
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  const box = el.querySelector('.check-box');
+  box.textContent = el.classList.contains('checked') ? '\u2713' : '';
+  updateProgress();
+  saveState();
+}
+
+function selectToggle(btn, type) {
+  const group = btn.parentElement;
+  group.querySelectorAll('.toggle-btn').forEach(b => {
+    b.classList.remove('selected', 'selected-warn', 'selected-bad');
+  });
+  if (type === 'good') btn.classList.add('selected');
+  else if (type === 'warn') btn.classList.add('selected-warn');
+  else if (type === 'bad') btn.classList.add('selected-bad');
+  updateProgress();
+  saveState();
+}
+
+function incrFriction(el) {
+  let count = parseInt(el.dataset.count) + 1;
+  el.dataset.count = count;
+  el.querySelector('.fc').textContent = count;
+  el.classList.add('active');
+  saveState();
+}
+
+// Inline note expand/collapse
+function openNote(btn) {
+  const noteDiv = btn.nextElementSibling;
+  const isOpen = noteDiv.classList.contains('open');
+  noteDiv.classList.toggle('open');
+  if (!isOpen) {
+    const ta = noteDiv.querySelector('textarea');
+    ta.focus();
+  }
+}
+
+function noteChanged(ta) {
+  // Highlight the toggle button if text is present
+  const noteDiv = ta.closest('.inline-note');
+  const toggleBtn = noteDiv.previousElementSibling;
+  if (ta.value.trim()) {
+    toggleBtn.classList.add('has-text');
+    toggleBtn.textContent = '* note';
+  } else {
+    toggleBtn.classList.remove('has-text');
+    toggleBtn.textContent = '+ note';
+  }
+  saveState();
+}
+
+function updateProgress() {
+  const allChecks = document.querySelectorAll('.check-row');
+  const allToggles = document.querySelectorAll('.toggles');
+  let total = allChecks.length + allToggles.length;
+  let done = 0;
+  allChecks.forEach(c => { if (c.classList.contains('checked')) done++; });
+  allToggles.forEach(g => { if (g.querySelector('.selected, .selected-warn, .selected-bad')) done++; });
+  const pct = total > 0 ? (done / total * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// ---- Cloud sync (Firebase Realtime Database) ----
+const FIREBASE_URL = 'https://shared-utils-b7fc3-default-rtdb.europe-west1.firebasedatabase.app/grille-visite.json';
+let saveTimer = null;
+
+async function cloudSave(state) {
+  try {
+    await fetch(FIREBASE_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+  } catch (e) {
+    // Silently fail — localStorage is the fallback
+  }
+}
+
+async function cloudLoad() {
+  try {
+    const res = await fetch(FIREBASE_URL);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.checks) return data;
+    }
+  } catch (e) {}
+  return null;
+}
+
+// ---- Save / Restore ----
+function collectState() {
+  const state = { checks: [], toggles: [], frictions: [], notes: [], blocs: [], inlineNotes: [] };
+
+  document.querySelectorAll('.check-row').forEach((el, i) => {
+    state.checks[i] = el.classList.contains('checked');
+  });
+
+  document.querySelectorAll('.toggles').forEach((g, i) => {
+    let idx = -1;
+    g.querySelectorAll('.toggle-btn').forEach((b, j) => {
+      if (b.classList.contains('selected') || b.classList.contains('selected-warn') || b.classList.contains('selected-bad')) idx = j;
+    });
+    state.toggles[i] = idx;
+  });
+
+  document.querySelectorAll('.friction-tag').forEach((el, i) => {
+    state.frictions[i] = parseInt(el.dataset.count);
+  });
+
+  document.querySelectorAll('.quick-note').forEach((el, i) => {
+    state.notes[i] = el.value;
+  });
+
+  document.querySelectorAll('.bloc').forEach((el, i) => {
+    state.blocs[i] = el.classList.contains('open');
+  });
+
+  document.querySelectorAll('.inline-note textarea').forEach((el, i) => {
+    state.inlineNotes[i] = el.value;
+  });
+
+  return state;
+}
+
+function saveState() {
+  const state = collectState();
+
+  // Local save (immediate)
+  localStorage.setItem('grille-visite-fabre', JSON.stringify(state));
+
+  // Cloud save (debounced 1.5s to avoid spamming)
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => cloudSave(state), 1500);
+
+  const fab = document.getElementById('fabSave');
+  fab.classList.add('saved');
+  setTimeout(() => fab.classList.remove('saved'), 400);
+
+  const toast = document.getElementById('toast');
+  toast.textContent = 'Sauvegarde OK';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1000);
+}
+
+function applyState(state) {
+  if (!state) return;
+
+  if (state.checks) {
+    document.querySelectorAll('.check-row').forEach((el, i) => {
+      if (state.checks[i]) {
+        el.classList.add('checked');
+        el.querySelector('.check-box').textContent = '\u2713';
+      }
+    });
+  }
+
+  if (state.toggles) {
+    document.querySelectorAll('.toggles').forEach((g, i) => {
+      if (state.toggles[i] >= 0) {
+        const btn = g.querySelectorAll('.toggle-btn')[state.toggles[i]];
+        if (btn) btn.click();
+      }
+    });
+  }
+
+  if (state.frictions) {
+    document.querySelectorAll('.friction-tag').forEach((el, i) => {
+      if (state.frictions[i] > 0) {
+        el.dataset.count = state.frictions[i];
+        el.querySelector('.fc').textContent = state.frictions[i];
+        el.classList.add('active');
+      }
+    });
+  }
+
+  if (state.notes) {
+    document.querySelectorAll('.quick-note').forEach((el, i) => {
+      if (state.notes[i]) el.value = state.notes[i];
+    });
+  }
+
+  if (state.blocs) {
+    document.querySelectorAll('.bloc').forEach((el, i) => {
+      if (state.blocs[i]) el.classList.add('open');
+      else el.classList.remove('open');
+    });
+  }
+
+  if (state.inlineNotes) {
+    document.querySelectorAll('.inline-note textarea').forEach((el, i) => {
+      if (state.inlineNotes[i]) {
+        el.value = state.inlineNotes[i];
+        el.closest('.inline-note').classList.add('open');
+        const toggleBtn = el.closest('.inline-note').previousElementSibling;
+        toggleBtn.classList.add('has-text');
+        toggleBtn.textContent = '* note';
+      }
+    });
+  }
+
+  updateProgress();
+}
+
+async function restoreState() {
+  // Try cloud first (most up to date), fall back to localStorage
+  const cloudState = await cloudLoad();
+  if (cloudState) {
+    applyState(cloudState);
+    // Also update localStorage with cloud data
+    localStorage.setItem('grille-visite-fabre', JSON.stringify(cloudState));
+    return;
+  }
+  const raw = localStorage.getItem('grille-visite-fabre');
+  if (raw) {
+    applyState(JSON.parse(raw));
+  }
+}
+
+// ---- Export as text ----
+function showExport() {
+  let text = 'VISITE BUREAU GROUPE FABRE — 4 MARS 2026\n';
+  text += '='.repeat(45) + '\n\n';
+
+  document.querySelectorAll('.bloc').forEach(bloc => {
+    const title = bloc.querySelector('.bloc-header h2').textContent;
+    text += '\n## ' + title.toUpperCase() + '\n\n';
+
+    // Checks
+    bloc.querySelectorAll('.check-row').forEach(cr => {
+      const checked = cr.classList.contains('checked') ? '[x]' : '[ ]';
+      const label = cr.querySelector('.check-text').textContent;
+      text += checked + ' ' + label + '\n';
+      // Check for inline note
+      const item = cr.closest('.check-item');
+      if (item) {
+        const note = item.querySelector('.inline-note textarea');
+        if (note && note.value.trim()) text += '   > ' + note.value.trim() + '\n';
+      }
+    });
+
+    // Obs with toggles
+    bloc.querySelectorAll('.obs, .q-card').forEach(obs => {
+      const label = obs.querySelector('.obs-label, .q-label');
+      if (!label) return;
+      const toggles = obs.querySelector('.toggles');
+      let selected = '';
+      if (toggles) {
+        const sel = toggles.querySelector('.selected, .selected-warn, .selected-bad');
+        if (sel) selected = sel.textContent.trim();
+      }
+      if (selected) {
+        text += '- ' + label.textContent + ' → ' + selected + '\n';
+      }
+      const note = obs.querySelector('.inline-note textarea');
+      if (note && note.value.trim()) text += '   > ' + note.value.trim() + '\n';
+    });
+
+    // Frictions
+    bloc.querySelectorAll('.friction-tag').forEach(ft => {
+      const count = parseInt(ft.dataset.count);
+      if (count > 0) {
+        const label = ft.textContent.replace(/\d+$/, '').trim();
+        text += '- ' + label + ' : ' + count + 'x\n';
+      }
+    });
+
+    // Quick notes
+    bloc.querySelectorAll('.quick-note').forEach(qn => {
+      if (qn.value.trim()) {
+        text += '\n' + qn.value.trim() + '\n';
+      }
+    });
+  });
+
+  document.getElementById('exportText').value = text;
+  document.getElementById('exportOverlay').classList.add('open');
+}
+
+function copyExport() {
+  const ta = document.getElementById('exportText');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const toast = document.getElementById('toast');
+    toast.textContent = 'Copie OK';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  });
+}
+
+function closeExport() {
+  document.getElementById('exportOverlay').classList.remove('open');
+}
+
+// ---- Clear all ----
+function confirmClear() {
+  if (confirm('Tout effacer ? Cette action est irreversible.')) {
+    clearAll();
+  }
+}
+
+function clearAll() {
+  // Uncheck all checkboxes
+  document.querySelectorAll('.check-row.checked').forEach(el => {
+    el.classList.remove('checked');
+    el.querySelector('.check-box').textContent = '';
+  });
+
+  // Deselect all toggles
+  document.querySelectorAll('.toggle-btn').forEach(b => {
+    b.classList.remove('selected', 'selected-warn', 'selected-bad');
+  });
+
+  // Reset friction counters
+  document.querySelectorAll('.friction-tag').forEach(el => {
+    el.dataset.count = 0;
+    el.querySelector('.fc').textContent = '0';
+    el.classList.remove('active');
+  });
+
+  // Clear all textareas
+  document.querySelectorAll('.quick-note, .inline-note textarea').forEach(el => {
+    el.value = '';
+  });
+
+  // Close and reset all inline notes
+  document.querySelectorAll('.inline-note').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.note-toggle').forEach(el => {
+    el.classList.remove('has-text');
+    el.textContent = '+ note';
+  });
+
+  // Clear localStorage and cloud
+  localStorage.removeItem('grille-visite-fabre');
+  cloudSave({ checks: [], toggles: [], frictions: [], notes: [], blocs: [], inlineNotes: [] });
+
+  updateProgress();
+
+  const toast = document.getElementById('toast');
+  toast.textContent = 'Tout efface';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1500);
+}
+
+// Init
+(async () => {
+  await restoreState();
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>
