@@ -1066,59 +1066,26 @@ function updateProgress() {
 }
 
 // ---- Cloud sync (jsonblob.com) ----
-const BLOB_API = 'https://jsonblob.com/api/jsonBlob';
-let blobId = null;
+// Blob pre-cree — tous les appareils partagent cet ID
+const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019c801d-ae60-7858-b744-e2b8b75a0e33';
 let saveTimer = null;
-
-function getBlobId() {
-  // Check URL hash first, then localStorage
-  if (location.hash && location.hash.length > 1) return location.hash.slice(1);
-  return localStorage.getItem('grille-blob-id');
-}
-
-function setBlobId(id) {
-  blobId = id;
-  localStorage.setItem('grille-blob-id', id);
-  if (!location.hash || location.hash.slice(1) !== id) {
-    history.replaceState(null, '', '#' + id);
-  }
-}
 
 async function cloudSave(state) {
   try {
-    if (blobId) {
-      await fetch(BLOB_API + '/' + blobId, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state)
-      });
-    } else {
-      const res = await fetch(BLOB_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state)
-      });
-      const loc = res.headers.get('Location') || res.headers.get('location');
-      if (loc) {
-        const id = loc.split('/').pop();
-        setBlobId(id);
-      }
-    }
+    await fetch(BLOB_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
   } catch (e) {
     // Silently fail — localStorage is the fallback
   }
 }
 
 async function cloudLoad() {
-  const id = getBlobId();
-  if (!id) return null;
   try {
-    const res = await fetch(BLOB_API + '/' + id);
-    if (res.ok) {
-      blobId = id;
-      setBlobId(id);
-      return await res.json();
-    }
+    const res = await fetch(BLOB_URL);
+    if (res.ok) return await res.json();
   } catch (e) {}
   return null;
 }
@@ -1367,9 +1334,7 @@ function clearAll() {
 
   // Clear localStorage and cloud
   localStorage.removeItem('grille-visite-fabre');
-  if (blobId) {
-    cloudSave({ checks: [], toggles: [], frictions: [], notes: [], blocs: [], inlineNotes: [] });
-  }
+  cloudSave({ checks: [], toggles: [], frictions: [], notes: [], blocs: [], inlineNotes: [] });
 
   updateProgress();
 
